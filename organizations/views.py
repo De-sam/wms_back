@@ -25,7 +25,7 @@ class OrganizationSignupView(APIView):
                 password=password,
                 organization=organization,
                 is_super_admin=True,
-                is_active=False 
+                is_active=False  # Activate after email verification
             )
 
             # Send activation email (with fake link placeholder for now)
