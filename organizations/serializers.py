@@ -6,11 +6,12 @@ from django.utils.text import slugify
 class OrganizationSignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
-        fields = ['name', 'email']
+        fields = ['organization_name', 'email']
 
     def create(self, validated_data):
         # Generate a unique subdomain
-        base_subdomain = slugify(validated_data['name'])
+        base_subdomain = slugify(validated_data['organization_name'])
+        # Ensure the subdomain is unique    
         subdomain = base_subdomain
         count = 1
         while Organization.objects.filter(subdomain=subdomain).exists():
