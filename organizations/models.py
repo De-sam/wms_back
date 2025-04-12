@@ -17,8 +17,23 @@ class Organization(models.Model):
 
 
 class User(AbstractUser):
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True)
+    organization = models.ForeignKey('Organization', on_delete=models.CASCADE, null=True, blank=True)
     is_super_admin = models.BooleanField(default=False)
+
+    groups = models.ManyToManyField(
+        Group,
+        related_name='custom_user_set',
+        blank=True,
+        help_text='The groups this user belongs to.',
+        verbose_name='groups',
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name='custom_user_permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
 
 class ActivationToken(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

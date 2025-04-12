@@ -19,6 +19,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['wms-back.onrender.com', 'localhost', '1277.0.0.1']
 
+AUTH_USER_MODEL = 'organizations.User'
 
 # Application definition
 
