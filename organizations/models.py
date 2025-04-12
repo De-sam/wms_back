@@ -2,7 +2,7 @@ import uuid
 from django.db import models
 from datetime import timedelta
 from django.utils import timezone
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group, Permission
 
 
 class Organization(models.Model):
