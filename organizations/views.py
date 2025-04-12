@@ -8,6 +8,7 @@ from .serializers import OrganizationSignupSerializer
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 import secrets
+from django.conf import settings
 
 User = get_user_model()
 
@@ -36,10 +37,11 @@ class OrganizationSignupView(APIView):
 
             # Send activation link
             activation_link = f"{settings.FRONTEND_URL}/activate/{token.token}"
+            print(f"Activation link: {activation_link}")  # For debugging
             send_mail(
                 subject='Activate Your Organization',
                 message=f'Click to activate: {activation_link}\nNote: Link expires in 15 minutes.',
-                from_email='noreply@example.com',
+                from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[organization.email],
             )
 
@@ -72,6 +74,11 @@ class ActivateOrganizationView(APIView):
 
         # Retrieve plain password from session
         plain_password = request.session.get(f'password_{user.id}')
+        if not plain_password:
+            return Response({'detail': 'Password not found in session.'}, status=400)
+        
+        print(f"Plain password: {plain_password}")  # For debugging
+
         if plain_password:
             # Send login credentials
             send_mail(
