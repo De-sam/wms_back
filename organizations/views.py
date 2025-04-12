@@ -57,24 +57,33 @@ class ActivateOrganizationView(APIView):
         user = activation_token.user
         organization = user.organization
 
+        if activation_token.is_expired():
+            activation_token.delete()
+            return Response({'detail': 'Activation link has expired.'}, status=400)
+
         if organization.is_active:
             return Response({'detail': 'Organization already activated.'}, status=400)
 
-        # Activate both org and super admin
+        # Activate org and super admin
         organization.is_active = True
         organization.save()
         user.is_active = True
         user.save()
 
-        # Send second email with credentials
-        send_mail(
-            subject='Your Organization Login Credentials',
-            message=f'Login Email: {user.email}\nPassword: (the one we generated earlier)',
-            from_email='noreply@example.com',
-            recipient_list=[user.email],
-        )
+        # Retrieve plain password from session
+        plain_password = request.session.get(f'password_{user.id}')
+        if plain_password:
+            # Send login credentials
+            send_mail(
+                subject='Your Organization Login Credentials',
+                message=f'Login Email: {user.email}\nPassword: {plain_password}',
+                from_email='noreply@example.com',
+                recipient_list=[user.email],
+            )
+            del request.session[f'password_{user.id}']  # Clean up
 
-        # Delete token after use
+        # Delete token
         activation_token.delete()
 
         return Response({'detail': 'Organization activated and credentials sent.'}, status=200)
+    
