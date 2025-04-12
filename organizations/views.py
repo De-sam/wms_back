@@ -2,7 +2,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import User
+from .models import User, Organization, ActivationToken
 from .serializers import OrganizationSignupSerializer
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -40,3 +40,31 @@ class OrganizationSignupView(APIView):
             return Response({'message': 'Organization created. Activation email sent.'}, status=status.HTTP_201_CREATED)
 
         return Response(org_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ActivateOrganizationView(APIView):
+    def get(self, request, token):
+        activation_token = get_object_or_404(ActivationToken, token=token)
+        user = activation_token.user
+        organization = user.organization
+
+        if organization.is_active:
+            return Response({'detail': 'Organization already activated.'}, status=400)
+
+        # Activate both org and super admin
+        organization.is_active = True
+        organization.save()
+        user.is_active = True
+        user.save()
+
+        # Send second email with credentials
+        send_mail(
+            subject='Your Organization Login Credentials',
+            message=f'Login Email: {user.email}\nPassword: (the one we generated earlier)',
+            from_email='noreply@example.com',
+            recipient_list=[user.email],
+        )
+
+        # Delete token after use
+        activation_token.delete()
+
+        return Response({'detail': 'Organization activated and credentials sent.'}, status=200)
