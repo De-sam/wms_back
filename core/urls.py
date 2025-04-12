@@ -29,8 +29,9 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('', lambda request: JsonResponse({'message': 'Welcome to the WMS API!'}), name='welcome'),
     path('api/organizations/', include('organizations.urls')),
-    path("<str:org_code>/users/", include("users.urls")),
-    path("<str:org_code>/bookings/", include("booking.urls")),
+    #path("<str:org_code>/users/", include("users.urls")),
+    #path("<str:org_code>/bookings/", include("booking.urls")),
+    path('login/', include('login.urls')),
 ]
 
 if settings.DEBUG: 

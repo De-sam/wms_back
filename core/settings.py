@@ -34,6 +34,9 @@ INSTALLED_APPS = [
     'organizations',
     'drf_yasg',
     'rest_framework_simplejwt',
+    'users',
+    'booking',
+    'login',
 ]
 
 REST_FRAMEWORK = {
