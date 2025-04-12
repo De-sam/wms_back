@@ -17,27 +17,35 @@ class OrganizationSignupView(APIView):
         org_serializer = OrganizationSignupSerializer(data=request.data)
         if org_serializer.is_valid():
             organization = org_serializer.save()
-            token = ActivationToken.objects.create(user=super_admin)
 
-            # Create super admin user with random password
-            password = secrets.token_urlsafe(10)
+            # Generate and store password temporarily
+            plain_password = secrets.token_urlsafe(10)
+
+            # Create inactive user
             super_admin = User.objects.create_user(
                 username=f"{organization.subdomain}_admin",
                 email=organization.email,
-                password=password,
+                password=plain_password,  # This gets hashed by Django
                 organization=organization,
                 is_super_admin=True,
-                is_active=False  # Activate after email verification
+                is_active=False
             )
 
-            # Send activation email (with fake link placeholder for now)
-            activation_link = f"https://wms-front-sable.vercel.app/activate/{token.token}"
+            # Generate activation token
+            token = ActivationToken.objects.create(user=super_admin)
+
+            # Send activation link
+            activation_link = f"{settings.FRONTEND_URL}/activate/{token.token}"
             send_mail(
                 subject='Activate Your Organization',
-                message=f'Click to activate: {activation_link}',
+                message=f'Click to activate: {activation_link}\nNote: Link expires in 15 minutes.',
                 from_email='noreply@example.com',
                 recipient_list=[organization.email],
             )
+
+            # Save password temporarily to session or cache (if available)
+            request.session[f'password_{super_admin.id}'] = plain_password  # store for 15 mins
+            request.session.set_expiry(900)  # 15 minutes
 
             return Response({'message': 'Organization created. Activation email sent.'}, status=status.HTTP_201_CREATED)
 
