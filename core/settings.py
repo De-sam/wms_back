@@ -17,7 +17,7 @@ SECRET_KEY = 'django-insecure-=c_%bc!=&k)#5g*@b()9)=gf=$y%)gb9lxqx*mc!+p^_e)36rj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['wms-back.onrender.com', 'localhost', '1277.0.0.1']
+ALLOWED_HOSTS = ['wms-back.onrender.com', 'localhost', '127.0.0.1']
 
 AUTH_USER_MODEL = 'organizations.User'
 
