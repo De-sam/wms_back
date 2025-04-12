@@ -2,6 +2,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 from .models import User, Organization, ActivationToken
 from .serializers import OrganizationSignupSerializer
 from django.contrib.auth import get_user_model
@@ -16,6 +17,7 @@ class OrganizationSignupView(APIView):
         org_serializer = OrganizationSignupSerializer(data=request.data)
         if org_serializer.is_valid():
             organization = org_serializer.save()
+            token = ActivationToken.objects.create(user=super_admin)
 
             # Create super admin user with random password
             password = secrets.token_urlsafe(10)
@@ -29,7 +31,7 @@ class OrganizationSignupView(APIView):
             )
 
             # Send activation email (with fake link placeholder for now)
-            activation_link = f"https://wms-front-sable.vercel.app/activate/{organization.subdomain}"
+            activation_link = f"https://wms-front-sable.vercel.app/activate/{token.token}"
             send_mail(
                 subject='Activate Your Organization',
                 message=f'Click to activate: {activation_link}',
