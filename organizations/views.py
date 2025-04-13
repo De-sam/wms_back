@@ -72,6 +72,7 @@ class ActivateOrganizationView(APIView):
         organization.save()
         user.is_active = True
         user.save()
+        
 
         # Retrieve plain password from session
         plain_password = request.session.get(f'password_{user.id}')
@@ -84,7 +85,7 @@ class ActivateOrganizationView(APIView):
             # Send login credentials
             send_mail(
                 subject='Your Organization Login Credentials',
-                message=f'Login Email: {user.email}\nPassword: {plain_password}',
+                message=f'Login Email: {user.email}\nPassword: {plain_password}\nURL: {settings.FRONTEND_URL}{organization.code}/login',
                 from_email='noreply@example.com',
                 recipient_list=[user.email],
             )

@@ -5,20 +5,25 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser, Group, Permission
 
 
-def generate_org_code():
-    from random import randint
-    code = str(randint(100000, 999999))
-    while Organization.objects.filter(code=code).exists():
-        code = str(randint(100000, 999999))
-    return code
-
 
 class Organization(models.Model):
     organization_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    code = models.CharField(max_length=6, unique=True, default=generate_org_code)
+    code = models.CharField(max_length=6, unique=True, blank=True) 
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = self.generate_unique_code()
+        super().save(*args, **kwargs)
+
+    def generate_unique_code(self):
+        from random import randint
+        while True:
+            code = str(randint(100000, 999999))
+            if not Organization.objects.filter(code=code).exists():
+                return code
 
     def __str__(self):
         return self.organization_name
