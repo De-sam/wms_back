@@ -31,7 +31,7 @@ urlpatterns = [
     path('api/organizations/', include('organizations.urls')),
     #path("<str:org_code>/users/", include("users.urls")),
     #path("<str:org_code>/bookings/", include("booking.urls")),
-    path('login/', include('login.urls')),
+    path('<str:org_code>/', include('login.urls')),
 ]
 
 if settings.DEBUG: 

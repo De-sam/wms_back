@@ -1,11 +1,18 @@
+# middlewares.py
+from django.http import JsonResponse
+from organizations.models import Organization
+
 class OrganizationMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        path_parts = request.path.strip("/").split("/")
-        if path_parts and path_parts[0].isdigit() and len(path_parts[0]) == 6:
-            request.org_code = path_parts[0]
-        else:
-            request.org_code = None
-        return self.get_response(request)
+        org_code = request.path.split('/')[1]  # Extract the org_code from the URL
+        try:
+            organization = Organization.objects.get(code=org_code)
+            request.organization = organization  # Make organization available in the request
+        except Organization.DoesNotExist:
+            return JsonResponse({"detail": "Organization not found"}, status=404)
+
+        response = self.get_response(request)
+        return response
