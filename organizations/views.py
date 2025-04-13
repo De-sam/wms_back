@@ -41,8 +41,9 @@ class OrganizationSignupView(APIView):
             send_mail(
                 subject='Activate Your Organization',
                 message=f'Click to activate: {activation_link}\nNote: Link expires in 15 minutes.',
-                from_email=settings.DEFAULT_FROM_EMAIL,
+                from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[organization.email],
+                fail_silently=False,
             )
 
             # Save password temporarily to session or cache (if available)
