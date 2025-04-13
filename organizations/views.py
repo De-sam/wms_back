@@ -24,7 +24,7 @@ class OrganizationSignupView(APIView):
 
             # Create inactive user
             super_admin = User.objects.create_user(
-                username=f"{organization.subdomain}_admin",
+                username=f"{organization.code}_admin",
                 email=organization.email,
                 password=plain_password,  # This gets hashed by Django
                 organization=organization,
