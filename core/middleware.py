@@ -1,18 +1,21 @@
-# middlewares.py
-from django.http import JsonResponse
+from django.utils.deprecation import MiddlewareMixin
 from organizations.models import Organization
 
-class OrganizationMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
+EXCLUDED_PATHS = [
+    '/api/organizations/signup/',
+    '/api/organizations/activate/',  # Add any other paths to exclude here
+]
 
+class OrganizationMiddleware(MiddlewareMixin):
     def __call__(self, request):
-        org_code = request.path.split('/')[1]  # Extract the org_code from the URL
-        try:
-            organization = Organization.objects.get(code=org_code)
-            request.organization = organization  # Make organization available in the request
-        except Organization.DoesNotExist:
-            return JsonResponse({"detail": "Organization not found"}, status=404)
+        if any(request.path.startswith(path) for path in EXCLUDED_PATHS):
+            return self.get_response(request)
 
-        response = self.get_response(request)
-        return response
+        try:
+            org_code = request.path.strip('/').split('/')[0]
+            organization = Organization.objects.get(code=org_code)
+            request.organization = organization
+        except (IndexError, Organization.DoesNotExist):
+            request.organization = None
+
+        return self.get_response(request)
