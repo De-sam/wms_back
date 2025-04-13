@@ -36,7 +36,7 @@ class OrganizationSignupView(APIView):
             token = ActivationToken.objects.create(user=super_admin)
 
             # Send activation link
-            activation_link = f"{settings.FRONTEND_URL}/activate/{token.token}"
+            activation_link = f"{settings.FRONTEND_URL}activate/{token.token}"
             print(f"Activation link: {activation_link}")  # For debugging
             send_mail(
                 subject='Activate Your Organization',
