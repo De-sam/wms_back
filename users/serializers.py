@@ -14,14 +14,15 @@ class ClientUserSignupSerializer(serializers.ModelSerializer):
         if ClientUser.objects.filter(organization=organization, email=value).exists():
             raise serializers.ValidationError("Email is already registered for this organization.")
         return value
+    
     def create(self, validated_data):
-        """ """
         """
         Create a new ClientUser instance.
         """
         organization = self.context['organization']
         client_user = ClientUser.objects.create(organization=organization, **validated_data)
         return client_user
+    
     def update(self, instance, validated_data):
         """
         Update an existing ClientUser instance.
@@ -31,6 +32,7 @@ class ClientUserSignupSerializer(serializers.ModelSerializer):
         instance.phone_number = validated_data.get('phone_number', instance.phone_number)
         instance.save()
         return instance
+    
     def validate(self, data):
         """
         Perform additional validation on the input data.
