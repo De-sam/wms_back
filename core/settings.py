@@ -19,7 +19,13 @@ PORT = config("PORT", 8000)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['wms-back.onrender.com', 'localhost', '127.0.0.1', 'wms-front-sable.vercel.app']
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Vite dev server
+    "https://your-react-app-domain.com",  # Add this if deployed
+]
+
+
+ALLOWED_HOSTS = ['wms-back.onrender.com', 'localhost', '127.0.0.1', 'wms-front-sable.vercel.app','localhost:5173']
 
 AUTH_USER_MODEL = 'organizations.User'
 
@@ -37,6 +43,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework_simplejwt',
     'users',
+    'corsheaders',
     'booking',
     'login',
 ]
@@ -56,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     #'core.middleware.OrganizationMiddleware',
 ]
 
