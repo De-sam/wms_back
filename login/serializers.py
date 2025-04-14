@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import check_password
+from users.models import ClientUser
+from organizations.models import Organization
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -8,13 +10,15 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, data):
         email = data.get("email")
         password = data.get("password")
+        organization = self.context.get("organization")
 
-        user = authenticate(email=email, password=password)
-        if not user:
+        try:
+            user = ClientUser.objects.get(email=email, organization=organization)
+        except ClientUser.DoesNotExist:
             raise serializers.ValidationError("Invalid email or password")
 
-        if not user.is_active:
-            raise serializers.ValidationError("User account is disabled")
+        if not check_password(password, user.password):
+            raise serializers.ValidationError("Invalid email or password")
 
         data["user"] = user
         return data

@@ -17,7 +17,7 @@ class LoginView(APIView):
         request.organization = organization
 
         # Proceed with normal login
-        serializer = LoginSerializer(data=request.data)
+        serializer = LoginSerializer(data=request.data, context={"organization": organization})
         if serializer.is_valid():
             user = serializer.validated_data["user"]
             refresh = RefreshToken.for_user(user)
