@@ -18,3 +18,8 @@ class ClientUserSignupView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# This view handles the signup process for client users.
+# It checks if the organization exists, validates the input data,
+# and saves the new client user to the database.
+# The response includes the created user data or error messages.
