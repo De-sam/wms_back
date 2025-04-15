@@ -24,6 +24,13 @@ CORS_ALLOWED_ORIGINS = [
     "https://wms-front-sable.vercel.app/",  # Add this if deployed
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "https://wms-front-sable.vercel.app"
+]
+
 
 ALLOWED_HOSTS = ['wms-back.onrender.com', 'localhost', '127.0.0.1', 'wms-front-sable.vercel.app']
 
