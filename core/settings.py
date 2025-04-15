@@ -31,6 +31,11 @@ CSRF_TRUSTED_ORIGINS = [
     "https://wms-front-sable.vercel.app"
 ]
 
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'Authorization',
+]
 
 ALLOWED_HOSTS = ['wms-back.onrender.com', 'localhost', '127.0.0.1', 'wms-front-sable.vercel.app']
 
