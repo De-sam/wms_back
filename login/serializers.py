@@ -17,7 +17,7 @@ class LoginSerializer(serializers.Serializer):
         except ClientUser.DoesNotExist:
             raise serializers.ValidationError("Invalid email or password")
 
-        if not check_password(password, user.password):
+        if not user.check_password(password):
             raise serializers.ValidationError("Invalid email or password")
 
         data["user"] = user
