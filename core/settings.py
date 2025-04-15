@@ -25,7 +25,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
-ALLOWED_HOSTS = ['wms-back.onrender.com', 'localhost', '127.0.0.1', 'wms-front-sable.vercel.app','localhost:5173']
+ALLOWED_HOSTS = ['wms-back.onrender.com', 'localhost', '127.0.0.1', 'wms-front-sable.vercel.app']
 
 AUTH_USER_MODEL = 'organizations.User'
 
