@@ -23,12 +23,12 @@ class ClientUserSignupView(APIView):
             plain_password = secrets.token_urlsafe(10)
 
             # Save the client with a hashed password
-            client_user = ClientUser.objects.create(
-                organization=organization,
-                full_name=serializer.validated_data['full_name'],
+            client_user = ClientUser.objects.create_user(
                 email=serializer.validated_data['email'],
+                full_name=serializer.validated_data['full_name'],
                 phone_number=serializer.validated_data['phone_number'],
-                password=make_password(plain_password)
+                password=plain_password,
+                organization=organization
             )
 
             # Send login credentials via email

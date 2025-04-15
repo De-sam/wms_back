@@ -26,6 +26,8 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+CLIENT_USER_MODEL = 'users.ClientUser'
+
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "https://wms-front-sable.vercel.app"
