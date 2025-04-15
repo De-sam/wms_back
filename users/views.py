@@ -3,6 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import check_password
 from organizations.models import Organization
+import secrets
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
 from .models import ClientUser
 from .serializers import ClientUserSignupSerializer
 
@@ -13,12 +17,38 @@ class ClientUserSignupView(APIView):
         except Organization.DoesNotExist:
             return Response({'detail': 'Invalid organization code'}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = ClientUserSignupSerializer(data=request.data)
+        serializer = ClientUserSignupSerializer(data=request.data, context={'organization': organization})
         if serializer.is_valid():
-            serializer.save(organization=organization)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            # Generate a secure random password
+            plain_password = secrets.token_urlsafe(10)
+
+            # Save the client with a hashed password
+            client_user = ClientUser.objects.create(
+                organization=organization,
+                full_name=serializer.validated_data['full_name'],
+                email=serializer.validated_data['email'],
+                phone_number=serializer.validated_data['phone_number'],
+                password=make_password(plain_password)
+            )
+
+            # Send login credentials via email
+            send_mail(
+                subject='Your Client Login Credentials',
+                message=f"Hello {client_user.full_name},\n\n"
+                        f"Here are your login details:\n"
+                        f"Email: {client_user.email}\n"
+                        f"Password: {plain_password}\n"
+                        f"Login here: {settings.FRONTEND_URL}{organization.code}/login\n\n"
+                        f"Please keep this information secure.",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[client_user.email],
+                fail_silently=False,
+            )
+
+            return Response({'message': 'Client created and credentials sent via email.'}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class ClientUserLoginView(APIView):
     def post(self, request, org_code):

@@ -15,9 +15,11 @@ class LoginSerializer(serializers.Serializer):
         try:
             user = ClientUser.objects.get(email=email, organization=organization)
         except ClientUser.DoesNotExist:
-            raise serializers.ValidationError("Invalid email or password")
+            raise serializers.ValidationError("user does not exist")
 
         if not user.check_password(password):
+            print(user.password)
+            print(check_password(password, user.password))
             raise serializers.ValidationError("Invalid email or password")
 
         data["user"] = user
