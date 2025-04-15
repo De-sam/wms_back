@@ -7,6 +7,7 @@ class ClientUser(models.Model):
     email = models.EmailField()
     phone_number = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
+    password = models.CharField(max_length=128, null=True, blank=True)  # Store hashed password
 
     class Meta:
         unique_together = ['organization', 'email']
