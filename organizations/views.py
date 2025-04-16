@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 import secrets
 from django.conf import settings
 from rest_framework.permissions import AllowAny
+from django.core.cache import cache
 
 User = get_user_model()
 
@@ -48,8 +49,8 @@ class OrganizationSignupView(APIView):
             )
 
             # Save password temporarily to session or cache (if available)
-            request.session[f'password_{super_admin.id}'] = plain_password  # store for 15 mins
-            request.session.set_expiry(900)  # 15 minutes
+            cache.set(f'password_{super_admin.id}', plain_password, timeout=900)  # 15 minutes
+
 
             return Response({'message': 'Organization created. Activation email sent.'}, status=status.HTTP_201_CREATED)
 
@@ -110,11 +111,13 @@ class ActivateOrganizationView(APIView):
         
 
         # Retrieve plain password from session
-        plain_password = request.session.get(f'password_{user.id}')
+        plain_password = cache.get(f'password_{user.id}')
         if not plain_password:
-            return Response({'detail': 'Password not found in session.'}, status=400)
+            return Response({'detail': 'Password not found.'}, status=400)
+
+        cache.delete(f'password_{user.id}')
         
-        print(f"Plain password: {plain_password}")  # For debugging
+        #print(f"Plain password: {plain_password}")  # For debugging
 
         if plain_password:
             # Send login credentials
