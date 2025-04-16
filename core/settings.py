@@ -68,7 +68,6 @@ REST_FRAMEWORK = {
     ),
 }
 
-RATELIMIT_VIEW = 'ratelimit.views.ratelimited'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -80,7 +79,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     #'core.middleware.OrganizationMiddleware',
-    'ratelimit.middleware.RatelimitMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'

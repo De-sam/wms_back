@@ -10,10 +10,6 @@ from django.core.mail import send_mail
 import secrets
 from django.conf import settings
 from rest_framework.permissions import AllowAny
-from django.utils.decorators import method_decorator
-from ratelimit.decorators import ratelimit
-from datetime import timedelta
-from django.utils import timezone
 
 User = get_user_model()
 
@@ -59,11 +55,9 @@ class OrganizationSignupView(APIView):
 
         return Response(org_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-@method_decorator(ratelimit(key='ip', rate='3/h', block=True), name='dispatch')
 class ResendActivationTokenView(APIView):
     permission_classes = [AllowAny]
 
-    @method_decorator(ratelimit(key='ip', rate='3/h', block=True))
     def post(self, request):
         email = request.data.get('email')
         try:
@@ -73,15 +67,13 @@ class ResendActivationTokenView(APIView):
             if organization.is_active:
                 return Response({'detail': 'Organization already activated.'}, status=400)
 
-            old_token = ActivationToken.objects.filter(user=user).first()
-            if old_token:
-                # Delay check: allow regeneration only after 2 minutes
-                if timezone.now() - old_token.created_at < timedelta(minutes=2):
-                    return Response({'detail': 'Please wait at least 2 minutes before requesting another link.'}, status=429)
-                old_token.delete()
+            # Delete old token if it exists
+            ActivationToken.objects.filter(user=user).delete()
 
+            # Create new token
             new_token = ActivationToken.objects.create(user=user)
 
+            # Send new activation link
             activation_link = f"{settings.FRONTEND_URL}activate/{new_token.token}"
             send_mail(
                 subject='Resend: Activate Your Organization',
