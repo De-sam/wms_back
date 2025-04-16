@@ -9,6 +9,11 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 import secrets
 from django.conf import settings
+from rest_framework.permissions import AllowAny
+from django.utils.decorators import method_decorator
+from ratelimit.decorators import ratelimit
+from datetime import timedelta
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -54,6 +59,43 @@ class OrganizationSignupView(APIView):
 
         return Response(org_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class ResendActivationTokenView(APIView):
+    permission_classes = [AllowAny]
+
+    @method_decorator(ratelimit(key='ip', rate='3/h', block=True))
+    def post(self, request):
+        email = request.data.get('email')
+        try:
+            organization = Organization.objects.get(email=email)
+            user = User.objects.get(email=email, organization=organization, is_super_admin=True)
+
+            if organization.is_active:
+                return Response({'detail': 'Organization already activated.'}, status=400)
+
+            old_token = ActivationToken.objects.filter(user=user).first()
+            if old_token:
+                # Delay check: allow regeneration only after 2 minutes
+                if timezone.now() - old_token.created_at < timedelta(minutes=2):
+                    return Response({'detail': 'Please wait at least 2 minutes before requesting another link.'}, status=429)
+                old_token.delete()
+
+            new_token = ActivationToken.objects.create(user=user)
+
+            activation_link = f"{settings.FRONTEND_URL}activate/{new_token.token}"
+            send_mail(
+                subject='Resend: Activate Your Organization',
+                message=f'Click to activate: {activation_link}\nNote: Link expires in 15 minutes.',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[email],
+            )
+
+            return Response({'detail': 'New activation link sent.'}, status=200)
+
+        except Organization.DoesNotExist:
+            return Response({'detail': 'Organization not found.'}, status=404)
+        except User.DoesNotExist:
+            return Response({'detail': 'Super admin not found.'}, status=404)
+
 class ActivateOrganizationView(APIView):
     def get(self, request, token):
         activation_token = get_object_or_404(ActivationToken, token=token)
