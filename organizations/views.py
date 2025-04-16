@@ -59,6 +59,7 @@ class OrganizationSignupView(APIView):
 
         return Response(org_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+@method_decorator(ratelimit(key='ip', rate='3/h', block=True), name='dispatch')
 class ResendActivationTokenView(APIView):
     permission_classes = [AllowAny]
 
