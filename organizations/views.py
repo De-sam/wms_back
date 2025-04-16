@@ -66,11 +66,15 @@ class ResendActivationTokenView(APIView):
             if organization.is_active:
                 return Response({'detail': 'Organization already activated.'}, status=400)
 
-            # Delete old token if it exists
+            # Get the last token (if any) to fetch stored password
+            old_token = ActivationToken.objects.filter(user=user).first()
+            original_password = old_token.password if old_token else None
+
+            # Delete old token
             ActivationToken.objects.filter(user=user).delete()
 
-            # Create new token
-            new_token = ActivationToken.objects.create(user=user)
+            # Create new token WITH password
+            new_token = ActivationToken.objects.create(user=user, password=original_password)
 
             # Send new activation link
             activation_link = f"{settings.FRONTEND_URL}activate/{new_token.token}"
