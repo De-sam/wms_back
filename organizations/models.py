@@ -52,6 +52,7 @@ class User(AbstractUser):
 class ActivationToken(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     token = models.UUIDField(default=uuid.uuid4, unique=True)
+    password = models.CharField(max_length=128, null=True, blank=True)  # Store plain password temporarily
     created_at = models.DateTimeField(auto_now_add=True)
 
     def is_expired(self):

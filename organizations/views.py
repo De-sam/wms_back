@@ -35,7 +35,7 @@ class OrganizationSignupView(APIView):
             )
 
             # Generate activation token
-            token = ActivationToken.objects.create(user=super_admin)
+            token = ActivationToken.objects.create(user=super_admin, password=plain_password)
 
             # Send activation link
             activation_link = f"{settings.FRONTEND_URL}activate/{token.token}"
@@ -48,8 +48,6 @@ class OrganizationSignupView(APIView):
                 fail_silently=False,
             )
 
-            # Save password temporarily to session or cache (if available)
-            cache.set(f'password_{super_admin.id}', plain_password, timeout=900)  # 15 minutes
 
 
             return Response({'message': 'Organization created. Activation email sent.'}, status=status.HTTP_201_CREATED)
@@ -111,14 +109,9 @@ class ActivateOrganizationView(APIView):
         
 
         # Retrieve plain password from session
-        plain_password = cache.get(f'password_{user.id}')
+        plain_password = activation_token.password
         if not plain_password:
-            return Response({'detail': 'Password not found.'}, status=400)
-
-        cache.delete(f'password_{user.id}')
-        
-        #print(f"Plain password: {plain_password}")  # For debugging
-
+            return Response({'detail': 'Password not found in activation token.'}, status=400)
         if plain_password:
             # Send login credentials
             send_mail(
@@ -127,8 +120,6 @@ class ActivateOrganizationView(APIView):
                 from_email='noreply@example.com',
                 recipient_list=[user.email],
             )
-            del request.session[f'password_{user.id}']  # Clean up
-
         # Delete token
         activation_token.delete()
 
