@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'booking',
     'login',
+    'ratelimit',
 ]
 
 REST_FRAMEWORK = {
