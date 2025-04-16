@@ -1,6 +1,8 @@
 from django.db import models
 from organizations.models import Organization
 from users.models import EmployeeUser  # Assuming this is the employee model
+from django.utils.crypto import get_random_string
+import uuid
 
 class Location(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="locations")
@@ -24,11 +26,19 @@ class Section(models.Model):
 
 
 class Seat(models.Model):
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="seats")
+    section = models.ForeignKey('Section', on_delete=models.CASCADE, related_name='seats')
     seat_number = models.CharField(max_length=10)  # unique within section
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     class Meta:
         unique_together = ('section', 'seat_number')
 
     def __str__(self):
         return f"{self.section.name} - {self.seat_number}"
+
+    def save(self, *args, **kwargs):
+        if not self.uuid:
+            location = self.section.location
+            raw_string = f"{location.id}-{self.section.id}-{self.seat_number}-{get_random_string(6)}"
+            self.uuid = uuid.uuid5(uuid.NAMESPACE_DNS, raw_string)
+        super().save(*args, **kwargs)
