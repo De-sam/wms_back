@@ -30,13 +30,6 @@ class WorkspaceSerializer(serializers.ModelSerializer):
         ]
 
 
-class WorkspaceCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Workspace
-        fields = [
-            'id', 'name', 'type', 'capacity',
-            'description', 'amenities', 'available', 'section'
-        ]
 
 class WorkspaceSectionSerializer(serializers.ModelSerializer):
     workspaces = WorkspaceSerializer(many=True, read_only=True)
@@ -61,7 +54,7 @@ class LocationSerializer(serializers.ModelSerializer):
 class SeatCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seat
-        fields = ['label']
+        fields = ['identifier']
 
 
 class WorkspaceCreateSerializer(serializers.ModelSerializer):
