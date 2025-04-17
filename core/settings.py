@@ -21,7 +21,8 @@ DEBUG = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite dev server
-    "https://wms-front-sable.vercel.app",  # Add this if deployed
+    "https://wms-front-sable.vercel.app",
+    "https://wms-back.onrender.com"  # Add this if deployed
 ]
 
 CORS_ALLOW_CREDENTIALS = True
