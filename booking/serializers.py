@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Location, Section, Seat
-from users.models import CustomUser  # Adjust if your user model path is different
+#from users.models import CustomUser  # Adjust if your user model path is different
 
 
 class SeatSerializer(serializers.ModelSerializer):
