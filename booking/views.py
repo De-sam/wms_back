@@ -1,9 +1,10 @@
-from rest_framework import generics, permissions, status, views
+from rest_framework import generics, permissions, status, views, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from django.db.models import Count, Q
 from .models import (
     Location, WorkspaceSection, Workspace,
-    Seat, Booking, Employee
+    Seat, Booking, Employee,
 )
 from .serializers import (
     LocationSerializer, LocationCreateSerializer,
@@ -89,3 +90,95 @@ class AvailableWorkspacesView(generics.ListAPIView):
             queryset = queryset.filter(capacity__gte=capacity_filter)
 
         return queryset.distinct()
+
+from .models import Location, WorkspaceSection, Workspace, Seat, Booking
+from .serializers import (
+    LocationSerializer, LocationCreateSerializer,
+    WorkspaceSerializer, WorkspaceCreateSerializer,
+    BookingSerializer
+)
+
+# Permissions
+class IsSuperAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == 'Admin'
+
+
+# ===================== LOCATION VIEWS =====================
+
+class LocationListCreateView(generics.ListCreateAPIView):
+    queryset = Location.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['city', 'state', 'address']
+    permission_classes = [IsSuperAdmin]
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return LocationCreateSerializer
+        return LocationSerializer
+
+    def get_queryset(self):
+        return Location.objects.filter(organization=self.request.user.organization)
+
+
+class LocationRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer
+    permission_classes = [IsSuperAdmin]
+
+    def get_queryset(self):
+        return Location.objects.filter(organization=self.request.user.organization)
+
+
+# ===================== WORKSPACE VIEWS =====================
+
+class WorkspaceListView(generics.ListAPIView):
+    queryset = Workspace.objects.all()
+    serializer_class = WorkspaceSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['type', 'is_available']
+    search_fields = ['name', 'description', 'amenities']
+
+    def get_queryset(self):
+        return Workspace.objects.filter(
+            section__location__organization=self.request.user.organization
+        )
+
+
+class WorkspaceUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Workspace.objects.all()
+    serializer_class = WorkspaceSerializer
+    permission_classes = [IsSuperAdmin]
+
+    def get_queryset(self):
+        return Workspace.objects.filter(
+            section__location__organization=self.request.user.organization
+        )
+
+
+# ===================== BOOKING VIEWS =====================
+
+class BookingListCreateView(generics.ListCreateAPIView):
+    serializer_class = BookingSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['seat__workspace__section__location__id', 'start_time']
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'Admin':
+            return Booking.objects.filter(seat__workspace__section__location__organization=user.organization)
+        return Booking.objects.filter(user=user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class BookingRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Booking.objects.all()
+    serializer_class = BookingSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'Admin':
+            return Booking.objects.filter(seat__workspace__section__location__organization=user.organization)
+        return Booking.objects.filter(user=user)
