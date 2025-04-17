@@ -13,6 +13,11 @@ class SeatSerializer(serializers.ModelSerializer):
         model = Seat
         fields = ['uuid', 'identifier', 'qr_uuid']
 
+class OrganizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = ['id', 'name', 'org_code']
+
 
 class WorkspaceSerializer(serializers.ModelSerializer):
     seats = SeatSerializer(many=True, read_only=True)
