@@ -26,9 +26,17 @@ class WorkspaceSerializer(serializers.ModelSerializer):
         model = Workspace
         fields = [
             'id', 'name', 'type', 'capacity', 'description',
-            'amenities', 'is_available', 'seats'
+            'amenities', 'is_available', 'seats', 'amenities'
         ]
 
+
+class WorkspaceCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Workspace
+        fields = [
+            'id', 'name', 'type', 'capacity',
+            'description', 'amenities', 'available', 'section'
+        ]
 
 class WorkspaceSectionSerializer(serializers.ModelSerializer):
     workspaces = WorkspaceSerializer(many=True, read_only=True)
