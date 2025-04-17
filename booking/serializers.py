@@ -7,9 +7,11 @@ from .models import (
 # ======================== BASIC SERIALIZERS =========================
 
 class SeatSerializer(serializers.ModelSerializer):
+    qr_uuid = serializers.UUIDField(source='uuid', read_only=True)
+
     class Meta:
         model = Seat
-        fields = ['uuid', 'label']
+        fields = ['uuid', 'identifier', 'qr_uuid']
 
 
 class WorkspaceSerializer(serializers.ModelSerializer):
