@@ -21,7 +21,8 @@ DEBUG = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite dev server
-    "https://wms-front-sable.vercel.app",  # Add this if deployed
+    "https://wms-front-sable.vercel.app",
+    "https://wms-back.onrender.com"  # Add this if deployed
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -39,7 +40,7 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     'Authorization',
 ]
 
-ALLOWED_HOSTS = ['wms-back.onrender.com', 'localhost', '127.0.0.1', 'wms-front-sable.vercel.app']
+ALLOWED_HOSTS = ['wms-back.onrender.com', 'localhost', '127.0.0.1','localhost:5173','wms-front-sable.vercel.app']
 
 AUTH_USER_MODEL = 'organizations.User'
 
@@ -173,6 +174,7 @@ SIMPLE_JWT = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_PORT = config('EMAIL_PORT', cast=int)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
@@ -180,3 +182,6 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 FRONTEND_URL = config('FRONTEND_URL')
+# FRONTEND_URL="http://localhost:5173/"
+
+print("🔗 Using frontend URL:", FRONTEND_URL)
