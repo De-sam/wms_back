@@ -2,7 +2,7 @@ from rest_framework import generics, permissions, status, views, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework import filters as drf_filters
-from .filters import WorkspaceFilter, BookingFilter
+from .filters import WorkspaceFilter, BookingFilter, BookingHistoryFilter
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count, Q
 from datetime import date
@@ -216,3 +216,30 @@ class UserDashboardSummaryView(views.APIView):
             } if active_booking else None,
             "booking_history_url": "/api/bookings/my/"
         })
+
+class BookingHistoryView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = BookingSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = BookingHistoryFilter
+
+    def get_queryset(self):
+        return Booking.objects.filter(user=self.request.user).order_by('-start_time')
+
+
+class BookingEditCancelView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = BookingSerializer
+
+    def get_queryset(self):
+        return Booking.objects.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        booking = self.get_object()
+        if booking.start_time.date() <= date.today():
+            return Response(
+                {"detail": "Cannot cancel booking on or after the start date."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().delete(request, *args, **kwargs)
+

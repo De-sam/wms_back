@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'booking',
     'login',
+    'django_filters',
 ]
 
 REST_FRAMEWORK = {

@@ -24,3 +24,12 @@ class BookingFilter(filters.FilterSet):
     class Meta:
         model = Booking
         fields = ['seat__workspace__section__location__name']
+
+class BookingHistoryFilter(django_filters.FilterSet):
+    start_date = django_filters.DateFilter(field_name="start_time", lookup_expr='gte')
+    end_date = django_filters.DateFilter(field_name="end_time", lookup_expr='lte')
+
+    class Meta:
+        model = Booking
+        fields = ['start_date', 'end_date']
+    
