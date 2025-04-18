@@ -1,14 +1,18 @@
 from rest_framework import generics, permissions, status, views, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
+from rest_framework import filters as drf_filters
+from .filters import WorkspaceFilter, BookingFilter
+from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count, Q
+from datetime import date
 from .models import (
     Location, WorkspaceSection, Workspace,
     Seat, Booking, Employee,
 )
 from .serializers import (
     LocationSerializer, LocationCreateSerializer,
-    WorkspaceSerializer, BookingSerializer
+    WorkspaceSerializer, BookingSerializer, WorkspaceCreateSerializer
 )
 from datetime import date
 
@@ -91,13 +95,6 @@ class AvailableWorkspacesView(generics.ListAPIView):
 
         return queryset.distinct()
 
-from .models import Location, WorkspaceSection, Workspace, Seat, Booking
-from .serializers import (
-    LocationSerializer, LocationCreateSerializer,
-    WorkspaceSerializer, WorkspaceCreateSerializer,
-    BookingSerializer
-)
-
 # Permissions
 class IsSuperAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -133,11 +130,12 @@ class LocationRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 # ===================== WORKSPACE VIEWS =====================
 
 class WorkspaceListView(generics.ListAPIView):
-    queryset = Workspace.objects.all()
+    queryset = Workspace.objects.all().select_related('section__location')
     serializer_class = WorkspaceSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['type', 'is_available']
-    search_fields = ['name', 'description', 'amenities']
+    filterset_class = WorkspaceFilter
+    search_fields = ['name', 'type', 'section__location__name']
 
     def get_queryset(self):
         return Workspace.objects.filter(
@@ -182,3 +180,39 @@ class BookingRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         if user.role == 'Admin':
             return Booking.objects.filter(seat__workspace__section__location__organization=user.organization)
         return Booking.objects.filter(user=user)
+
+class BookingListView(generics.ListAPIView):
+    serializer_class = BookingSerializer
+    filter_backends = [DjangoFilterBackend, drf_filters.SearchFilter]
+    filterset_class = BookingFilter
+    search_fields = ['seat__label', 'seat__workspace__name']
+
+    def get_queryset(self):
+        user = self.request.user
+        return Booking.objects.filter(user=user)
+    
+# ===================== USER DASHBOARD VIEWS =====================
+
+class UserDashboardSummaryView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        today = date.today()
+
+        total_bookings = Booking.objects.filter(user=user).count()
+        active_booking = Booking.objects.filter(
+            user=user,
+            start_time__date=today
+        ).order_by('start_time').first()
+
+        return Response({
+            "my_bookings": total_bookings,
+            "active_booking": {
+                "seat": active_booking.seat.label if active_booking else None,
+                "workspace": active_booking.seat.workspace.name if active_booking else None,
+                "start_time": active_booking.start_time if active_booking else None,
+                "end_time": active_booking.end_time if active_booking else None,
+            } if active_booking else None,
+            "booking_history_url": "/api/bookings/my/"
+        })
