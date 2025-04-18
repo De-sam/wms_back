@@ -54,7 +54,7 @@ class LocationSerializer(serializers.ModelSerializer):
 class SeatCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seat
-        identifier=seat_data['identifier']
+        fields = ['identifier']
 
 
 
