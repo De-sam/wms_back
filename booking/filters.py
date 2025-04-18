@@ -1,5 +1,7 @@
 from django_filters import rest_framework as filters
 from .models import Workspace, Booking, Location
+import django_filters
+
 
 class WorkspaceFilter(filters.FilterSet):
     amenities = filters.CharFilter(method='filter_amenities')
