@@ -59,6 +59,9 @@ class LocationListCreateView(generics.ListCreateAPIView):
         return LocationSerializer
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Location.objects.none()
+        
         return self.queryset.filter(organization=self.request.user.organization)
 
 
@@ -69,6 +72,9 @@ class MyBookingsView(generics.ListAPIView):
     serializer_class = BookingSerializer
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Booking.objects.none()
+        
         return Booking.objects.filter(user=self.request.user)
 
 
@@ -84,6 +90,9 @@ class AvailableWorkspacesView(generics.ListAPIView):
     serializer_class = WorkspaceSerializer
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Workspace.objects.none()
+        
         queryset = Workspace.objects.filter(is_available=True)
         type_filter = self.request.query_params.get('type')
         capacity_filter = self.request.query_params.get('capacity')
@@ -115,6 +124,9 @@ class LocationListCreateView(generics.ListCreateAPIView):
         return LocationSerializer
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Location.objects.none()
+        
         return Location.objects.filter(organization=self.request.user.organization)
 
 
@@ -124,6 +136,9 @@ class LocationRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsSuperAdmin]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Location.objects.none()
+        
         return Location.objects.filter(organization=self.request.user.organization)
 
 
@@ -138,6 +153,9 @@ class WorkspaceListView(generics.ListAPIView):
     search_fields = ['name', 'type', 'section__location__name']
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Workspace.objects.none()
+        
         return Workspace.objects.filter(
             section__location__organization=self.request.user.organization
         )
@@ -149,6 +167,9 @@ class WorkspaceUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsSuperAdmin]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Workspace.objects.none()
+        
         return Workspace.objects.filter(
             section__location__organization=self.request.user.organization
         )
@@ -162,6 +183,9 @@ class BookingListCreateView(generics.ListCreateAPIView):
     filterset_fields = ['seat__workspace__section__location__id', 'start_time']
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Booking.objects.none()
+        
         user = self.request.user
         if user.role == 'Admin':
             return Booking.objects.filter(seat__workspace__section__location__organization=user.organization)
@@ -176,6 +200,9 @@ class BookingRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BookingSerializer
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Booking.objects.none()
+        
         user = self.request.user
         if user.role == 'Admin':
             return Booking.objects.filter(seat__workspace__section__location__organization=user.organization)
@@ -188,6 +215,9 @@ class BookingListView(generics.ListAPIView):
     search_fields = ['seat__label', 'seat__workspace__name']
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Booking.objects.none()
+        
         user = self.request.user
         return Booking.objects.filter(user=user)
     
@@ -224,6 +254,9 @@ class BookingHistoryView(generics.ListAPIView):
     filterset_class = BookingHistoryFilter
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Booking.objects.none()
+        
         return Booking.objects.filter(user=self.request.user).order_by('-start_time')
 
 
@@ -232,6 +265,9 @@ class BookingEditCancelView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BookingSerializer
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Booking.objects.none()
+        
         return Booking.objects.filter(user=self.request.user)
 
     def delete(self, request, *args, **kwargs):

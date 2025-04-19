@@ -2,17 +2,19 @@ import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from organizations.models import Organization
+from django.conf import settings
 
-User = get_user_model()
+User = settings.CLIENT_USER_MODEL
 
 
-class Organization(models.Model):
+'''class Organization(models.Model):
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=6, unique=True)  # for subdomain or identification
 
     def __str__(self):
         return self.name
-
+'''
 
 class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -38,7 +40,7 @@ class Location(models.Model):
 
 class WorkspaceSection(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="sections")
-    name = models.CharField(max_length=100)  # e.g., VIP, Regular
+    name = models.CharField(max_length=100) # e.g., Floor 1, Building A
     capacity = models.PositiveIntegerField()
 
     def __str__(self):
