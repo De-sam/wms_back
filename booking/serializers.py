@@ -26,7 +26,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
         model = Workspace
         fields = [
             'id', 'name', 'type', 'capacity', 'description',
-            'amenities', 'is_available', 'seats', 'amenities'
+            'amenities', 'is_available', 'seats'
         ]
 
 
@@ -91,7 +91,7 @@ class WorkspaceSectionCreateSerializer(serializers.ModelSerializer):
             seats_data = workspace_data.pop('seats')
             workspace = Workspace.objects.create(section=section, **workspace_data)
             for seat in seats_data:
-                Seat.objects.create(workspace=workspace, label=seat['identifier'])
+                Seat.objects.create(workspace=workspace, identifier=seat['identifier'])
 
         return section
 
@@ -124,7 +124,7 @@ class LocationCreateSerializer(serializers.ModelSerializer):
                 seats_data = workspace_data.pop('seats')
                 workspace = Workspace.objects.create(section=section, **workspace_data)
                 for seat in seats_data:
-                    Seat.objects.create(workspace=workspace, label=seat['label'])
+                    Seat.objects.create(workspace=workspace, identifier=seat['identifier'])
 
         return location
 

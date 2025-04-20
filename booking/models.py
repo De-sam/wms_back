@@ -2,17 +2,20 @@ import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from organizations.models import Organization
+from django.conf import settings
+from django.core.exceptions import ValidationError
 
-User = get_user_model()
+User = settings.CLIENT_USER_MODEL
 
 
-class Organization(models.Model):
+'''class Organization(models.Model):
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=6, unique=True)  # for subdomain or identification
 
     def __str__(self):
         return self.name
-
+'''
 
 class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -38,12 +41,20 @@ class Location(models.Model):
 
 class WorkspaceSection(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="sections")
-    name = models.CharField(max_length=100)  # e.g., VIP, Regular
+    name = models.CharField(max_length=100) # e.g., Floor 1, Building A
     capacity = models.PositiveIntegerField()
 
     def __str__(self):
         return f"{self.name} ({self.location.name})"
 
+AMENITY_OPTIONS = ['power_outlet', 'projector', 'whiteboard', 'ergonomic_chair']
+
+def validate_amenities(value):
+    if not isinstance(value, list):
+        raise ValidationError("Amenities must be a list.")
+    invalid = [item for item in value if item not in AMENITY_OPTIONS]
+    if invalid:
+        raise ValidationError(f"Invalid amenities: {invalid}")
 
 class Workspace(models.Model):
     WORKSPACE_TYPE_CHOICES = (
@@ -52,18 +63,13 @@ class Workspace(models.Model):
         ("Private Office", "Private Office"),
         ("Training Table", "Training Table"),
     )
-    AMENITY_OPTIONS = [
-        ('power_outlet', 'Power Outlet'),
-        ('projector', 'Projector'),
-        ('whiteboard', 'Whiteboard'),
-        ('ergonomic_chair', 'Ergonomic Chair'),
-    ]
+
     section = models.ForeignKey(WorkspaceSection, on_delete=models.CASCADE, related_name="workspaces")
     name = models.CharField(max_length=100)  # e.g., Desk A1, Room B2
     type = models.CharField(max_length=50, choices=WORKSPACE_TYPE_CHOICES)
     capacity = models.PositiveIntegerField()
     description = models.TextField(blank=True, null=True)
-    amenities = models.JSONField(default=list, blank=True, choices=AMENITY_OPTIONS)  # ["Whiteboard", "Power Outlet"]
+    amenities = models.JSONField(default=list, blank=True, validators=[validate_amenities])
     is_available = models.BooleanField(default=True)
 
     def __str__(self):
