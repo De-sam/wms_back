@@ -23,6 +23,16 @@ class SectionListView(generics.ListAPIView):
     serializer_class = SectionSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+class BookingDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Booking.objects.all()
+    serializer_class = BookingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Optional: limit non-admins to only their bookings
+        if self.request.user.is_staff:
+            return Booking.objects.all()
+        return Booking.objects.filter(user=self.request.user)
 
 class WorkspaceCreateView(generics.CreateAPIView):
     queryset = Workspace.objects.all()
