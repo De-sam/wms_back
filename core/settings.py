@@ -89,7 +89,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    #'core.middleware.OrganizationMiddleware',
+    'core.middleware.OrganizationMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -192,4 +192,5 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 FRONTEND_URL = config('FRONTEND_URL')
 # FRONTEND_URL="http://localhost:5173/"
 
-#print("🔗 Using frontend URL:", FRONTEND_URL)
+
+print("🔗 Using frontend URL:", FRONTEND_URL)
