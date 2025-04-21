@@ -1,4 +1,4 @@
-'''from rest_framework import serializers
+from rest_framework import serializers
 from django.contrib.auth.hashers import check_password
 from users.models import ClientUser
 from organizations.models import Organization, User
@@ -79,4 +79,4 @@ class CombinedLoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Account is not active")
 
         data["user"] = user
-        return data'''
+        return data

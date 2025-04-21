@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import LoginSerializer #, AdminLoginSerializer
-#from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import LoginSerializer , AdminLoginSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 from users.utils import get_tokens_for_client_user  # ✅ Import the utility
 from organizations.models import Organization
 
@@ -21,7 +21,7 @@ class LoginView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 
-'''class AdminLoginView(APIView):
+class AdminLoginView(APIView):
     def post(self, request, org_code):
         serializer = AdminLoginSerializer(data=request.data, context={"org_code": org_code})
         if serializer.is_valid():
@@ -34,5 +34,5 @@ class LoginView(APIView):
                 "email": user.email,
                 "organization": user.organization.organization_name
             }, status=200)
-        return Response(serializer.errors, status=401)'''
+        return Response(serializer.errors, status=401)
     
