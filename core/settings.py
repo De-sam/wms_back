@@ -20,7 +20,8 @@ PORT = config("PORT", 8000)
 DEBUG = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Vite dev server
+    "http://localhost:5173",
+    "http://localhost:5174",  # Vite dev server
     "https://wms-front-sable.vercel.app",
     "https://wms-back.onrender.com"  # Add this if deployed
 ]
