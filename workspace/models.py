@@ -17,6 +17,8 @@ class Workspace(models.Model):
         ("Meeting Room", "Meeting Room"),
         ("Private Office", "Private Office"),
         ("Training Table", "Training Table"),
+        ("Others", "Others"),
+
     )
 
     AMENITY_OPTIONS = [
