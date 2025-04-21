@@ -1,11 +1,5 @@
 from rest_framework import serializers
-from .models import Section, Workspace, Booking
-
-
-class SectionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Section
-        fields = ['id', 'name']
+from .models import Workspace, Booking
 
 
 class WorkspaceSerializer(serializers.ModelSerializer):
@@ -14,7 +8,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workspace
         fields = [
-            'id', 'section', 'name', 'type',
+            'id', 'name', 'type',
             'capacity', 'description', 'amenities', 'is_available'
         ]
 

@@ -1,27 +1,6 @@
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
-from organizations.models import Organization
-
-
-
-class Section(models.Model):
-    name = models.CharField(max_length=100)
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="sections",
-        null=True,     # ✅ allow null in database
-        blank=True     # ✅ allow empty in forms/admin
-    )
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="sections"
-    )
-
-    def __str__(self):
-        return self.name
 
 
 class Workspace(models.Model):
@@ -33,11 +12,6 @@ class Workspace(models.Model):
             ("Others", "Others"),
     )
 
-    section = models.ForeignKey(
-        Section,
-        on_delete=models.CASCADE,
-        related_name="workspaces"
-    )
     name = models.CharField(max_length=100)
     type = models.CharField(max_length=50, choices=WORKSPACE_TYPE_CHOICES)
     capacity = models.PositiveIntegerField()
