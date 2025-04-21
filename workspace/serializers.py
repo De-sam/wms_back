@@ -22,19 +22,21 @@ class WorkspaceSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        fields = ['id', 'workspace', 'user', 'start_time', 'end_time']
-        read_only_fields = ['user']
+        fields = '__all__'
 
     def validate(self, data):
-        workspace = data['workspace']
-        start_time = data['start_time']
-        end_time = data['end_time']
+        start = data.get('start_time')
+        end = data.get('end_time')
+        workspace = data.get('workspace')
 
-        overlapping = Booking.objects.filter(
+        conflict = Booking.objects.filter(
             workspace=workspace,
-            start_time__lt=end_time,
-            end_time__gt=start_time,
-        )
-        if overlapping.exists():
-            raise serializers.ValidationError("This workspace is already booked for the selected time range.")
+            status='ACTIVE',
+        ).filter(
+            Q(start_time__lt=end) & Q(end_time__gt=start)
+        ).exists()
+
+        if conflict:
+            raise serializers.ValidationError("This workspace is already booked for the selected time.")
         return data
+

@@ -2,7 +2,7 @@ from rest_framework import generics, permissions, filters, viewsets
 from .models import Section, Workspace, Booking
 from django.db.models import Q
 from django.utils import timezone
-from .filters import WorkspaceFilter
+from .filters import WorkspaceFilter, BookingFilter
 from datetime import datetime, timedelta
 import django_filters.rest_framework
 from django_filters.rest_framework import DjangoFilterBackend
@@ -10,7 +10,26 @@ from rest_framework.pagination import PageNumberPagination
 from django.contrib.postgres.search import TrigramSimilarity
 from rest_framework.filters import BaseFilterBackend
 from .serializers import SectionSerializer, WorkspaceSerializer, BookingSerializer
+from rest_framework.decorators import api_view
+from django.utils.dateparse import parse_datetime
 
+@api_view(['GET'])
+def check_availability(request):
+    workspace_id = request.query_params.get('workspace_id')
+    start = parse_datetime(request.query_params.get('start_time'))
+    end = parse_datetime(request.query_params.get('end_time'))
+
+    if not all([workspace_id, start, end]):
+        return Response({'error': 'Missing parameters'}, status=400)
+
+    conflicts = Booking.objects.filter(
+        workspace_id=workspace_id,
+        status='ACTIVE',  # only active bookings count as conflicts
+    ).filter(
+        Q(start_time__lt=end) & Q(end_time__gt=start)
+    ).exists()
+
+    return Response({'available': not conflicts})
 
 class SectionCreateView(generics.CreateAPIView):
     queryset = Section.objects.all()
@@ -99,10 +118,16 @@ class WorkspaceListView(generics.ListAPIView):
 
         return queryset
 
+
 class BookingCreateView(generics.CreateAPIView):
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Booking.objects.none()  # or Booking.objects.all() if you prefer
+        return Booking.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -115,3 +140,10 @@ class BookingListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Booking.objects.filter(user=self.request.user)
+
+class BookingViewSet(viewsets.ModelViewSet):
+    queryset = Booking.objects.all()
+    serializer_class = BookingSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = BookingFilter
+
