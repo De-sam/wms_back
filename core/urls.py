@@ -30,8 +30,9 @@ urlpatterns = [
     path('', lambda request: JsonResponse({'message': 'Welcome to the WMS API!'}), name='welcome'),
     path('api/organizations/', include('organizations.urls')),
     path('<str:org_code>/users/', include('users.urls')),
-    path("<str:org_code>/bookings/", include("booking.urls")),
+    #path("<str:org_code>/bookings/", include("booking.urls")),
     path('<str:org_code>/', include('login.urls')),
+    path('<str:org_code>/', include('workspace.urls')),
 ]
 
 if settings.DEBUG: 
