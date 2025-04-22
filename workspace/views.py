@@ -9,7 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import BaseFilterBackend
 from django.contrib.postgres.search import TrigramSimilarity
-
+from rest_framework.exceptions import NotFound
 from .models import Workspace, Booking
 from .filters import WorkspaceFilter, BookingFilter
 from .serializers import WorkspaceSerializer, BookingSerializer
@@ -52,7 +52,11 @@ class WorkspaceCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        org = Organization.objects.get(code=self.request.org_code)
+        try:
+            org = Organization.objects.get(code=self.request.org_code)
+        except Organization.DoesNotExist:
+            raise NotFound("Invalid organization code.")
+        
         serializer.save(organization=org)
 
 
