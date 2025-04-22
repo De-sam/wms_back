@@ -90,7 +90,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    #'core.middleware.OrganizationMiddleware',
+    'core.middleware.OrganizationMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
