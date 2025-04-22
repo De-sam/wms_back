@@ -29,6 +29,13 @@ class Workspace(models.Model):
 
 
 class Booking(models.Model):
+    STATUS_CHOICES = (
+        ('PENDING', 'Pending'),
+        ('ACTIVE', 'Active'),
+        ('COMPLETED', 'Completed'),
+        ('CANCELLED', 'Cancelled'),
+    )
+
     workspace = models.ForeignKey(
         Workspace,
         on_delete=models.CASCADE,
@@ -40,6 +47,8 @@ class Booking(models.Model):
     )
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
 
     def __str__(self):
-        return f"{self.workspace.name} booked by {self.user.username}"
+        return f"{self.workspace.name} booked by {self.user.full_name}"
+    
