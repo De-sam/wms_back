@@ -1,5 +1,5 @@
 from rest_framework import generics, permissions, filters, viewsets
-from .models import Section, Workspace, Booking
+from .models import Workspace, Booking
 from django.db.models import Q
 from django.utils import timezone
 from .filters import WorkspaceFilter, BookingFilter
@@ -9,7 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.postgres.search import TrigramSimilarity
 from rest_framework.filters import BaseFilterBackend
-from .serializers import SectionSerializer, WorkspaceSerializer, BookingSerializer
+from .serializers import WorkspaceSerializer, BookingSerializer
 from rest_framework.decorators import api_view
 from django.utils.dateparse import parse_datetime
 
@@ -30,17 +30,6 @@ def check_availability(request):
     ).exists()
 
     return Response({'available': not conflicts})
-
-class SectionCreateView(generics.CreateAPIView):
-    queryset = Section.objects.all()
-    serializer_class = SectionSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
-class SectionListView(generics.ListAPIView):
-    queryset = Section.objects.all()
-    serializer_class = SectionSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 class BookingDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Booking.objects.all()

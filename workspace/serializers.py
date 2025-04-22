@@ -1,11 +1,5 @@
 from rest_framework import serializers
-from .models import Section, Workspace, Booking
-
-
-class SectionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Section
-        fields = ['id', 'name']
+from .models import Workspace, Booking
 
 
 class WorkspaceSerializer(serializers.ModelSerializer):
@@ -14,7 +8,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workspace
         fields = [
-            'id', 'section', 'name', 'type',
+            'id', 'name', 'type',
             'capacity', 'description', 'amenities', 'is_available'
         ]
 
@@ -40,9 +34,3 @@ class BookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("This workspace is already booked for the selected time.")
         return data
 
-class BookingSummarySerializer(serializers.ModelSerializer):
-    workspace_name = serializers.CharField(source='workspace.name')
-
-    class Meta:
-        model = Booking
-        fields = ['workspace_name', 'start_time', 'end_time', 'status']
