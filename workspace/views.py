@@ -52,12 +52,9 @@ class WorkspaceCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        try:
-            org = Organization.objects.get(code=self.request.org_code)
-        except Organization.DoesNotExist:
-            raise NotFound("Invalid organization code.")
-        
-        serializer.save(organization=org)
+        if not self.request.organization:
+            raise NotFound("Invalid or missing organization in URL.")
+        serializer.save(organization=self.request.organization)
 
 
 class StandardPagination(PageNumberPagination):
