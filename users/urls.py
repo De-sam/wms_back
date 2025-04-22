@@ -1,8 +1,10 @@
 from django.urls import path
-from .views import ClientUserSignupView
+from .views import ClientUserSignupView, ToggleNotificationView, GetNotificationStatusView
 
 urlpatterns = [
     path('signup/', ClientUserSignupView.as_view(), name='client-user-signup'),
+    path('toggle-notifications/', ToggleNotificationView.as_view(), name='toggle-notifications'),
+    path('notification-status/', GetNotificationStatusView.as_view(), name='get-notification-status'),
 ]
 # This URL pattern maps the signup endpoint for client users to the ClientUserSignupView.
 # The `org_code` parameter is passed to the view to identify the organization.

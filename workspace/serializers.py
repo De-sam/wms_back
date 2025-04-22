@@ -40,3 +40,9 @@ class BookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("This workspace is already booked for the selected time.")
         return data
 
+class BookingSummarySerializer(serializers.ModelSerializer):
+    workspace_name = serializers.CharField(source='workspace.name')
+
+    class Meta:
+        model = Booking
+        fields = ['workspace_name', 'start_time', 'end_time', 'status']

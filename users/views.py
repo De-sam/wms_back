@@ -4,10 +4,12 @@ from rest_framework import status
 from django.contrib.auth.hashers import check_password
 from organizations.models import Organization
 import secrets
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.mail import send_mail
 from django.conf import settings
-from django.contrib.auth.hashers import make_password
+#from django.contrib.auth.hashers import make_password
 from .models import ClientUser
+from rest_framework.permissions import IsAuthenticated
 from .serializers import ClientUserSignupSerializer
 
 class ClientUserSignupView(APIView):
@@ -67,11 +69,63 @@ class ClientUserLoginView(APIView):
         except (ClientUser.DoesNotExist, ValueError):
             return Response({"non_field_errors": ["Invalid email or password"]}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Fetch user's bookings
+        bookings = Booking.objects.filter(client_user=client).select_related("workspace")
+        booking_data = BookingSummarySerializer(bookings, many=True).data
+
         return Response({
             "message": "Login successful",
             "client_id": client.id,
-            "full_name": client.full_name
+            "full_name": client.full_name,
+            "email": client.email,
+            "phone_number": client.phone_number,
+            "notifications_enabled": client.notifications_enabled,
+            "bookings": booking_data
         })
+    
+class ToggleNotificationView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, org_code):
+        user = request.user
+
+        # Ensure user is a client of the right organization
+        try:
+            organization = Organization.objects.get(code=org_code)
+        except Organization.DoesNotExist:
+            return Response({"detail": "Invalid organization code"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not hasattr(user, "organization") or user.organization != organization:
+            return Response({"detail": "You do not belong to this organization."}, status=status.HTTP_403_FORBIDDEN)
+
+        user.notifications_enabled = not user.notifications_enabled
+        user.save()
+
+        return Response({
+            "message": f"Email notifications {'enabled' if user.notifications_enabled else 'disabled'}",
+            "notifications_enabled": user.notifications_enabled
+        }, status=status.HTTP_200_OK)
+    
+class GetNotificationStatusView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, org_code):
+        user = request.user
+
+        # Check organization match
+        try:
+            organization = Organization.objects.get(code=org_code)
+        except Organization.DoesNotExist:
+            return Response({"detail": "Invalid organization code"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not hasattr(user, "organization") or user.organization != organization:
+            return Response({"detail": "You do not belong to this organization."}, status=status.HTTP_403_FORBIDDEN)
+
+        return Response({
+            "notifications_enabled": user.notifications_enabled
+        }, status=status.HTTP_200_OK)
 # This view handles the signup process for client users.
 # It checks if the organization exists, validates the input data,
 # and saves the new client user to the database.

@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import ClientUser
+from workspace.models import Booking
+from workspace.serializers import BookingSummarySerializer
 
 class ClientUserSignupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -44,3 +46,4 @@ class ClientUserSignupSerializer(serializers.ModelSerializer):
         if not data.get('phone_number'):
             raise serializers.ValidationError("Phone number is required.")
         return data
+
