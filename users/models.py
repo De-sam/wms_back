@@ -22,7 +22,7 @@ class ClientUser(AbstractBaseUser, PermissionsMixin):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="client_users")
     full_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=20)
+    #phone_number = models.CharField(max_length=20)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
