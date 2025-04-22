@@ -13,6 +13,7 @@ class Workspace(models.Model):
     )
 
     name = models.CharField(max_length=100)
+    organization = models.ForeignKey('organizations.Organization', on_delete=models.CASCADE, related_name='workspaces')
     type = models.CharField(max_length=50, choices=WORKSPACE_TYPE_CHOICES)
     capacity = models.PositiveIntegerField()
     description = models.TextField(blank=True, null=True)
