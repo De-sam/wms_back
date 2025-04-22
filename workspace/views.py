@@ -9,12 +9,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import BaseFilterBackend
 from django.contrib.postgres.search import TrigramSimilarity
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 from .models import Workspace, Booking
 from .filters import WorkspaceFilter, BookingFilter
 from .serializers import WorkspaceSerializer, BookingSerializer
 from organizations.models import Organization
-
 
 @api_view(['GET'])
 def check_availability(request):
