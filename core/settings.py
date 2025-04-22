@@ -194,4 +194,4 @@ FRONTEND_URL = config('FRONTEND_URL')
 # FRONTEND_URL="http://localhost:5173/"
 
 
-print("🔗 Using frontend URL:", FRONTEND_URL)
+#print("🔗 Using frontend URL:", FRONTEND_URL)
