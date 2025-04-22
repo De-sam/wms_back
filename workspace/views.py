@@ -53,7 +53,7 @@ class WorkspaceCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         if not self.request.organization:
-            raise NotFound("Invalid or missing organization in URL.")
+            raise ValidationError("Organization not found in request.")
         serializer.save(organization=self.request.organization)
 
 
@@ -83,9 +83,17 @@ class WorkspaceViewSet(viewsets.ModelViewSet):
     filterset_class = WorkspaceFilter
     ordering_fields = ['name', 'capacity', 'type']
 
-    def get_queryset(self):
-        return Workspace.objects.filter(organization__code=self.request.org_code)
+    def perform_create(self, serializer):
+        organization = getattr(self.request, 'organization', None)
+        if not organization:
+            raise ValidationError("Organization could not be determined.")
+        serializer.save(organization=organization)
 
+    def get_queryset(self):
+        organization = getattr(self.request, 'organization', None)
+        if not organization:
+            return Workspace.objects.none()
+        return Workspace.objects.filter(organization=organization)
 
 class WorkspaceListView(generics.ListAPIView):
     serializer_class = WorkspaceSerializer
