@@ -12,6 +12,11 @@ from .models import ClientUser
 from rest_framework.permissions import IsAuthenticated
 from .serializers import ClientUserSignupSerializer
 from django.shortcuts import get_object_or_404
+from rest_framework.generics import ListAPIView
+from django.db.models import Q
+from rest_framework.pagination import PageNumberPagination
+from workspace.models import Booking
+from workspace.serializers import BookingSummarySerializer
 
 class ClientUserSignupView(APIView):
     def post(self, request, org_code):
