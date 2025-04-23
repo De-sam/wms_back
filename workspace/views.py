@@ -247,7 +247,7 @@ class RecentActivitiesView(APIView):
 
         recent_workspaces = Workspace.objects.filter(
             organization=organization,
-            created_at__gte=timezone.now() - timedelta(days=7)
+            created_at__gte=one_week_ago
         ).order_by('-created_at')
 
         completed_sessions = Booking.objects.filter(
