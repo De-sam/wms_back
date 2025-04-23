@@ -16,6 +16,8 @@ class Workspace(models.Model):
     organization = models.ForeignKey('organizations.Organization', on_delete=models.CASCADE, related_name='workspaces')
     type = models.CharField(max_length=50, choices=WORKSPACE_TYPE_CHOICES)
     capacity = models.PositiveIntegerField()
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
     description = models.TextField(blank=True, null=True)
     amenities = models.JSONField(default=list, blank=True)  # Removed strict validation
 
