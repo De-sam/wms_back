@@ -12,6 +12,46 @@ class WorkspaceSerializer(serializers.ModelSerializer):
             'capacity', 'description', 'amenities', 'is_available'
         ]
 
+class TopBookedWorkspaceSerializer(serializers.ModelSerializer):
+    bookings_count = serializers.IntegerField()
+
+    class Meta:
+        model = Workspace
+        fields = ['id', 'name', 'bookings_count']
+
+class UpcomingBookingSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email')
+    workspace_name = serializers.CharField(source='workspace.name')
+    duration = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Booking
+        fields = ['user_email', 'workspace_name', 'start_time', 'end_time', 'duration']
+
+    def get_duration(self, obj):
+        return str(obj.end_time - obj.start_time)
+    
+class RecentBookingSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    user_email = serializers.CharField(source='user__email')
+    workspace_name = serializers.CharField(source='workspace__name')
+    status = serializers.CharField()
+    created_at = serializers.DateTimeField()
+
+class NewWorkspaceSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    created_at = serializers.DateTimeField()
+
+class UserSignupSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    email = serializers.EmailField()
+    created_at = serializers.DateTimeField()
+
+class BookingAnalyticsSerializer(serializers.Serializer):
+    day = serializers.DateField()
+    count = serializers.IntegerField()
+
 
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:

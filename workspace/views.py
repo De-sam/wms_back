@@ -19,6 +19,7 @@ from django.utils.timezone import now
 from django.db.models.functions import TruncDate
 from users.models import ClientUser
 from django.db.models import Count
+from django.shortcuts import get_object_or_404
 
 @api_view(['GET'])
 def check_availability(request):
@@ -228,30 +229,54 @@ class UpcomingBookingsView(APIView):
 
 
 class RecentActivitiesView(APIView):
-    def get(self, request):
-        recent_bookings = list(
-            Booking.objects.filter(created_at__gte=now()-timedelta(days=3)).values("id", "user__email", "workspace__name", "status", "created_at")
-        )
+    def get(self, request, org_code):
+        organization = get_object_or_404(Organization, code=org_code)
 
-        new_workspaces = list(
-            Workspace.objects.filter(created_at__gte=now()-timedelta(days=3)).values("id", "name", "created_at")
-        )
+        recent_bookings = Booking.objects.filter(
+            workspace__organization=organization,
+            created_at__gte=timezone.now() - timedelta(days=7)
+        ).order_by('-created_at')
 
-        user_signups = list(
-            ClientUser.objects.filter(created_at__gte=now()-timedelta(days=3)).values("id", "email", "created_at")
-        )
+        recent_cancellations = Booking.objects.filter(
+            workspace__organization=organization,
+            status='cancelled',
+            updated_at__gte=timezone.now() - timedelta(days=7)
+        ).order_by('-updated_at')
 
-        booking_analytics = (
-            Booking.objects.filter(created_at__gte=now()-timedelta(days=7))
-            .annotate(day=TruncDate('created_at'))
-            .values('day')
-            .annotate(count=Count('id'))
-            .order_by('day')
-        )
+        recent_workspaces = Workspace.objects.filter(
+            organization=organization,
+            created_at__gte=timezone.now() - timedelta(days=7)
+        ).order_by('-created_at')
+
+        completed_sessions = Booking.objects.filter(
+            workspace__organization=organization,
+            status='completed',
+            updated_at__gte=timezone.now() - timedelta(days=7)
+        ).order_by('-updated_at')
+
+        new_users = ClientUser.objects.filter(
+            organization=organization,
+            date_joined__gte=timezone.now() - timedelta(days=7)
+        ).order_by('-date_joined')
+
+        # Analytics: count of bookings per day in past 7 days
+        analytics = []
+        for i in range(7):
+            day = timezone.now().date() - timedelta(days=i)
+            count = Booking.objects.filter(
+                workspace__organization=organization,
+                created_at__date=day
+            ).count()
+            analytics.append({
+                "date": day,
+                "count": count
+            })
 
         return Response({
-            "recent_bookings": recent_bookings,
-            "new_workspaces": new_workspaces,
-            "user_signups": user_signups,
-            "booking_analytics": booking_analytics,
-        }, status=200)
+            "recent_bookings": BookingSerializer(recent_bookings, many=True).data,
+            "recent_cancellations": BookingSerializer(recent_cancellations, many=True).data,
+            "recent_workspaces": WorkspaceSerializer(recent_workspaces, many=True).data,
+            "completed_sessions": BookingSerializer(completed_sessions, many=True).data,
+            "new_users": ClientUserSerializer(new_users, many=True).data,
+            "booking_analytics": analytics
+        })
