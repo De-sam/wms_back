@@ -47,3 +47,7 @@ class ClientUserSignupSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Phone number is required.")
         return data
 
+class ClientUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClientUser
+        fields = ['id', 'full_name', 'email', 'phone_number']

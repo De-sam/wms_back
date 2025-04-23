@@ -20,6 +20,7 @@ from django.db.models.functions import TruncDate
 from users.models import ClientUser
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
+from users.serializers import ClientUserSerializer
 
 one_week_ago = timezone.now() - timedelta(days=7)
 
@@ -203,18 +204,24 @@ class AdminToggleWorkspaceView(APIView):
             return Response({"detail": "All workspaces enabled."}, status=200)
 
 class TopBookedWorkspacesView(APIView):
-    def get(self, request):
+    def get(self, request, org_code, *args, **kwargs):
+        organization = get_object_or_404(Organization, code=org_code)
         top_workspaces = (
-            Workspace.objects.annotate(bookings_count=Count('bookings'))
+            Workspace.objects.filter(organization=organization)  # filter by org
+            .annotate(bookings_count=Count('bookings'))
             .order_by('-bookings_count')[:10]
             .values('id', 'name', 'bookings_count')
         )
         return Response(top_workspaces, status=200)
 
+
 class UpcomingBookingsView(APIView):
-    def get(self, request):
+    def get(self, request, org_code, *args, **kwargs):
+        organization = get_object_or_404(Organization, code=org_code)
         bookings = Booking.objects.filter(
-            status="Booked", start_time__gte=now()
+            status="Booked",
+            start_time__gte=now(),
+            workspace__organization=organization  # Filter by organization
         ).order_by('start_time').select_related('workspace', 'user')
 
         result = [
@@ -228,6 +235,7 @@ class UpcomingBookingsView(APIView):
             for b in bookings
         ]
         return Response(result, status=200)
+
 
 
 class RecentActivitiesView(APIView):
@@ -258,7 +266,7 @@ class RecentActivitiesView(APIView):
 
         new_users = ClientUser.objects.filter(
             organization=organization,
-            date_joined__gte=timezone.now() - timedelta(days=7)
+            date_joined__gte=one_week_ago
         ).order_by('-date_joined')
 
         # Analytics: count of bookings per day in past 7 days

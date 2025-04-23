@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from organizations.models import Organization
+from django.utils import timezone
 
 class ClientUserManager(BaseUserManager):
     def create_user(self, email, full_name, phone_number, password=None, **extra_fields):
@@ -23,6 +24,7 @@ class ClientUser(AbstractBaseUser, PermissionsMixin):
     full_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     #phone_number = models.CharField(max_length=20)
+    date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
