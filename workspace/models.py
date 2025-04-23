@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
-import django.utils.timezone as timezone
+#import django.utils.timezone as timezone
 
 class Workspace(models.Model):
     WORKSPACE_TYPE_CHOICES = (
@@ -45,7 +45,7 @@ class Booking(models.Model):
         settings.CLIENT_USER_MODEL,
         on_delete=models.CASCADE
     )
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
