@@ -14,6 +14,8 @@ from .models import Workspace, Booking
 from .filters import WorkspaceFilter, BookingFilter
 from .serializers import WorkspaceSerializer, BookingSerializer
 from organizations.models import Organization
+from rest_framework.views import APIView
+from django.utils.timezone import now
 
 @api_view(['GET'])
 def check_availability(request):
@@ -158,3 +160,38 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Booking.objects.filter(workspace__organization__code=self.request.org_code)
+
+class AdminToggleWorkspaceView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, org_code):
+        action = request.data.get("action")  # "disable" or "enable"
+
+        if action not in ["disable", "enable"]:
+            return Response({"detail": "Invalid action please use 'disable' or 'enable' "}, status=400)
+
+        try:
+            organization = Organization.objects.get(code=org_code)
+        except Organization.DoesNotExist:
+            return Response({"detail": "Organization not found"}, status=404)
+
+        user = request.user
+        if not user.is_authenticated or user.organization != organization or not user.is_super_admin:
+            return Response({"detail": "Unauthorized"}, status=403)
+
+        if action == "disable":
+            # Disable all workspaces
+            Workspace.objects.filter(organization=organization).update(status="Unavailable")
+
+            # Cancel all active or upcoming bookings
+            Booking.objects.filter(
+                workspace__organization=organization,
+                status__in=["Booked", "Ongoing"]
+            ).update(status="Cancelled", end_time=now())
+
+            return Response({"detail": "All workspaces disabled and bookings cancelled."}, status=200)
+
+        elif action == "enable":
+            # Enable all workspaces
+            Workspace.objects.filter(organization=organization).update(status="Available")
+            return Response({"detail": "All workspaces enabled."}, status=200)
