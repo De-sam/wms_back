@@ -21,6 +21,8 @@ from users.models import ClientUser
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 
+one_week_ago = timezone.now() - timedelta(days=7)
+
 @api_view(['GET'])
 def check_availability(request):
     workspace_id = request.query_params.get('workspace_id')
@@ -240,7 +242,7 @@ class RecentActivitiesView(APIView):
         recent_cancellations = Booking.objects.filter(
             workspace__organization=organization,
             status='cancelled',
-            updated_at__gte=timezone.now() - timedelta(days=7)
+            updated_at__gte=one_week_ago,
         ).order_by('-updated_at')
 
         recent_workspaces = Workspace.objects.filter(
