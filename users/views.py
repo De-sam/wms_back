@@ -11,6 +11,7 @@ from django.conf import settings
 from .models import ClientUser
 from rest_framework.permissions import IsAuthenticated
 from .serializers import ClientUserSignupSerializer
+from django.shortcuts import get_object_or_404
 
 class ClientUserSignupView(APIView):
     def post(self, request, org_code):
@@ -126,6 +127,26 @@ class GetNotificationStatusView(APIView):
         return Response({
             "notifications_enabled": user.notifications_enabled
         }, status=status.HTTP_200_OK)
+    
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class OrganizationUsersView(ListAPIView):
+    serializer_class = ClientUserSignupSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        org_code = self.kwargs['org_code']
+        organization = get_object_or_404(Organization, code=org_code)
+        query = self.request.query_params.get('search', '')
+
+        return ClientUser.objects.filter(
+            organization=organization
+        ).filter(
+            Q(full_name__icontains=query) | Q(email__icontains=query)
+        )
 # This view handles the signup process for client users.
 # It checks if the organization exists, validates the input data,
 # and saves the new client user to the database.
