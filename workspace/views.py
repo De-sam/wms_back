@@ -16,6 +16,9 @@ from .serializers import WorkspaceSerializer, BookingSerializer
 from organizations.models import Organization
 from rest_framework.views import APIView
 from django.utils.timezone import now
+from django.db.models.functions import TruncDate
+from users.models import ClientUser
+from django.db.models import Count
 
 @api_view(['GET'])
 def check_availability(request):
@@ -195,3 +198,60 @@ class AdminToggleWorkspaceView(APIView):
             # Enable all workspaces
             Workspace.objects.filter(organization=organization).update(status="Available")
             return Response({"detail": "All workspaces enabled."}, status=200)
+
+class TopBookedWorkspacesView(APIView):
+    def get(self, request):
+        top_workspaces = (
+            Workspace.objects.annotate(bookings_count=Count('bookings'))
+            .order_by('-bookings_count')[:10]
+            .values('id', 'name', 'bookings_count')
+        )
+        return Response(top_workspaces, status=200)
+
+class UpcomingBookingsView(APIView):
+    def get(self, request):
+        bookings = Booking.objects.filter(
+            status="Booked", start_time__gte=now()
+        ).order_by('start_time').select_related('workspace', 'user')
+
+        result = [
+            {
+                "user": b.user.email,
+                "workspace": b.workspace.name,
+                "start_time": b.start_time,
+                "end_time": b.end_time,
+                "duration": str(b.end_time - b.start_time)
+            }
+            for b in bookings
+        ]
+        return Response(result, status=200)
+
+
+class RecentActivitiesView(APIView):
+    def get(self, request):
+        recent_bookings = list(
+            Booking.objects.filter(created_at__gte=now()-timedelta(days=3)).values("id", "user__email", "workspace__name", "status", "created_at")
+        )
+
+        new_workspaces = list(
+            Workspace.objects.filter(created_at__gte=now()-timedelta(days=3)).values("id", "name", "created_at")
+        )
+
+        user_signups = list(
+            ClientUser.objects.filter(created_at__gte=now()-timedelta(days=3)).values("id", "email", "created_at")
+        )
+
+        booking_analytics = (
+            Booking.objects.filter(created_at__gte=now()-timedelta(days=7))
+            .annotate(day=TruncDate('created_at'))
+            .values('day')
+            .annotate(count=Count('id'))
+            .order_by('day')
+        )
+
+        return Response({
+            "recent_bookings": recent_bookings,
+            "new_workspaces": new_workspaces,
+            "user_signups": user_signups,
+            "booking_analytics": booking_analytics,
+        }, status=200)
