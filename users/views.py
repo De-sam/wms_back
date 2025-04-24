@@ -162,7 +162,7 @@ class OrganizationUsersView(ListAPIView):
     
 @method_decorator(csrf_exempt, name='dispatch')
 class ApproveOrDeclineUserView(APIView):
-    def post(self, request, org_code, user_id):
+    def patch(self, request, org_code, user_id):
         try:
             organization = Organization.objects.get(code=org_code)
         except Organization.DoesNotExist:

@@ -6,7 +6,7 @@ from workspace.serializers import BookingSummarySerializer
 class ClientUserSignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientUser
-        fields = ['full_name', 'email', 'notifications_enabled']
+        fields = ['full_name', 'email', 'notifications_enabled', 'status', 'is_staff', 'is_active']
 
     def validate_email(self, value):
         """
