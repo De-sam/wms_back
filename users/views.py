@@ -46,6 +46,7 @@ class ClientUserSignupView(APIView):
                 message=f"Hello {client_user.full_name},\n\n"
                         f"Here are your login details:\n"
                         f"Email: {client_user.email}\n"
+                        f"User_Id: {client_user.id}\n"
                         f"Password: {plain_password}\n"
                         f"Login here: {settings.FRONTEND_URL}{organization.code}/login\n\n"
                         f"Please keep this information secure.\n"
@@ -181,7 +182,6 @@ class ApproveOrDeclineUserView(APIView):
                 subject='Your Account Has Been Approved',
                 message=f"Hello {user.full_name},\n\n"
                         f"Your account has been approved.\n\n"
-                        f"Email: {user.email}\n"
                         f"Login here: {settings.FRONTEND_URL}{organization.code}/login\n\n"
                         f"Welcome aboard!\n\n"
                         f"Best regards,\n"
