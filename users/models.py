@@ -29,7 +29,7 @@ class ClientUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     #phone_number = models.CharField(max_length=20)
     date_joined = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     notifications_enabled = models.BooleanField(default=True)
