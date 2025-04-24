@@ -17,6 +17,7 @@ from django.db.models import Q
 from rest_framework.pagination import PageNumberPagination
 from workspace.models import Booking
 from workspace.serializers import BookingSummarySerializer
+method_decorator = getattr(__import__('django.utils.decorators'), 'method_decorator', None)
 
 class ClientUserSignupView(APIView):
     def post(self, request, org_code):
@@ -158,6 +159,7 @@ class OrganizationUsersView(ListAPIView):
             Q(full_name__icontains=query) | Q(email__icontains=query)
         )
     
+@method_decorator(csrf_exempt, name='dispatch')
 class ApproveOrDeclineUserView(APIView):
     def patch(self, request, org_code, user_id):
         try:
