@@ -17,6 +17,8 @@ from django.db.models import Q
 from rest_framework.pagination import PageNumberPagination
 from workspace.models import Booking
 from workspace.serializers import BookingSummarySerializer
+from django.views.decorators.csrf import csrf_exempt
+
 method_decorator = getattr(__import__('django.utils.decorators'), 'method_decorator', None)
 
 class ClientUserSignupView(APIView):
