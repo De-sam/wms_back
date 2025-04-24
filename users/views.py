@@ -34,7 +34,6 @@ class ClientUserSignupView(APIView):
             client_user = ClientUser.objects.create_user(
                 email=serializer.validated_data['email'],
                 full_name=serializer.validated_data['full_name'],
-                #phone_number=serializer.validated_data['phone_number'],
                 password=plain_password,
                 organization=organization
             )
@@ -84,7 +83,6 @@ class ClientUserLoginView(APIView):
             "client_id": client.id,
             "full_name": client.full_name,
             "email": client.email,
-            #"phone_number": client.phone_number,
             "notifications_enabled": client.notifications_enabled,
             "bookings": booking_data
         })

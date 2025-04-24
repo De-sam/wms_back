@@ -6,7 +6,7 @@ from workspace.serializers import BookingSummarySerializer
 class ClientUserSignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientUser
-        fields = ['full_name', 'email', 'phone_number']
+        fields = ['full_name', 'email', 'notifications_enabbled']
 
     def validate_email(self, value):
         """
@@ -31,7 +31,7 @@ class ClientUserSignupSerializer(serializers.ModelSerializer):
         """
         instance.full_name = validated_data.get('full_name', instance.full_name)
         instance.email = validated_data.get('email', instance.email)
-        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        #instance.phone_number = validated_data.get('phone_number', instance.phone_number)
         instance.save()
         return instance
     
@@ -43,11 +43,11 @@ class ClientUserSignupSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Full name is required.")
         if not data.get('email'):
             raise serializers.ValidationError("Email is required.")
-        if not data.get('phone_number'):
-            raise serializers.ValidationError("Phone number is required.")
+        #if not data.get('phone_number'):
+        #    raise serializers.ValidationError("Phone number is required.")
         return data
 
 class ClientUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientUser
-        fields = ['id', 'full_name', 'email', 'phone_number']
+        fields = ['id', 'full_name', 'email', 'date_joined', 'is_active', 'is_staff', 'notifications_enabled']
