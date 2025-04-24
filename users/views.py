@@ -183,8 +183,10 @@ class ApproveOrDeclineUserView(APIView):
                         f"Your account has been approved.\n\n"
                         f"Email: {user.email}\n"
                         f"Login here: {settings.FRONTEND_URL}{organization.code}/login\n\n"
-                        f""
-                        f"Welcome aboard!",
+                        f"Welcome aboard!\n\n"
+                        f"Best regards,\n"
+                        f"ISapce Team\n\n"
+                        f"If you have any questions, feel free to reach out to us via email at samsoncoded@gmail.com",
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[user.email],
                 fail_silently=False,
