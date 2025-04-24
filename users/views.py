@@ -35,24 +35,30 @@ class ClientUserSignupView(APIView):
                 email=serializer.validated_data['email'],
                 full_name=serializer.validated_data['full_name'],
                 password=plain_password,
-                organization=organization
+                organization=organization,
+                is_active=False,
+                status='Pending'
             )
 
             # Send login credentials via email
             send_mail(
-                subject='Your Client Login Credentials',
+                subject='Your Login Credentials',
                 message=f"Hello {client_user.full_name},\n\n"
                         f"Here are your login details:\n"
                         f"Email: {client_user.email}\n"
                         f"Password: {plain_password}\n"
                         f"Login here: {settings.FRONTEND_URL}{organization.code}/login\n\n"
-                        f"Please keep this information secure.",
+                        f"Please keep this information secure.\n"
+                        f"Please kindly be on the lookout for an email stating your request has been approved by an admin,\n"
+                        f"If you have any questions, feel free to reach out.\n\n"
+                        f"Best regards,\n"
+                        f"ISapce Team",
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[client_user.email],
                 fail_silently=False,
             )
 
-            return Response({'message': 'Client created and credentials sent via email.'}, status=status.HTTP_201_CREATED)
+            return Response({'message': 'Client created successfully. Awaiting admin approval.'}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
