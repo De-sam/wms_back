@@ -20,6 +20,10 @@ class ClientUserManager(BaseUserManager):
 
 
 class ClientUser(AbstractBaseUser, PermissionsMixin):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Active', 'Active'),
+    ]
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="client_users")
     full_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
@@ -29,6 +33,7 @@ class ClientUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     notifications_enabled = models.BooleanField(default=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
 
     objects = ClientUserManager()
 
