@@ -156,6 +156,49 @@ class OrganizationUsersView(ListAPIView):
         ).filter(
             Q(full_name__icontains=query) | Q(email__icontains=query)
         )
+    
+class ApproveOrDeclineUserView(APIView):
+    def patch(self, request, org_code, user_id):
+        try:
+            organization = Organization.objects.get(code=org_code)
+        except Organization.DoesNotExist:
+            return Response({'detail': 'Invalid organization code'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            user = ClientUser.objects.get(id=user_id, organization=organization)
+        except ClientUser.DoesNotExist:
+            return Response({'detail': 'User not found in this organization'}, status=status.HTTP_404_NOT_FOUND)
+
+        decision = request.data.get('decision')
+
+        if decision == 'accept':
+            user.is_active = True
+            user.status = 'Active'
+            user.save()
+
+            # Email credentials
+            send_mail(
+                subject='Your Account Has Been Approved',
+                message=f"Hello {user.full_name},\n\n"
+                        f"Your account has been approved.\n\n"
+                        f"Email: {user.email}\n"
+                        f"Login here: {settings.FRONTEND_URL}{organization.code}/login\n\n"
+                        f""
+                        f"Welcome aboard!",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+            return Response({'message': 'User approved and email sent.'}, status=status.HTTP_200_OK)
+
+        elif decision == 'decline':
+            user.delete()
+            return Response({'message': 'User account declined and deleted.'}, status=status.HTTP_200_OK)
+
+        return Response({'detail': 'Invalid decision. Must be "accept" or "decline".'}, status=status.HTTP_400_BAD_REQUEST)
+
+# This code defines a Django view for handling user signup in an organization.
+# It includes a class-based view that processes POST requests to create a new client user.
 # This view handles the signup process for client users.
 # It checks if the organization exists, validates the input data,
 # and saves the new client user to the database.
